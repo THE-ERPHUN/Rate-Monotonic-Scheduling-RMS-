@@ -6,8 +6,8 @@ from functools import reduce
 @dataclass
 class Task:
     name: str
-    execution_time: int  # C
-    period: int          # T (deadline = period)
+    execution_time: int 
+    period: int        
     remaining: int = 0
     next_release: int = 0
 
@@ -34,25 +34,22 @@ def utilization_test(tasks):
 def rate_monotonic(tasks):
     """Preemptive Rate Monotonic simulation over one hyperperiod"""
     hyperperiod = reduce(lcm, (t.period for t in tasks))
-    # اولویت: دوره‌ی کمتر = اولویت بالاتر
     tasks = sorted(tasks, key=lambda t: t.period)
 
-    timeline = []          # نام وظیفه‌ی در حال اجرا در هر واحد زمان
-    missed = []            # deadline های از دست رفته
+    timeline = []       
+    missed = []         
 
     for t in tasks:
         t.remaining = 0
         t.next_release = 0
 
     for time in range(hyperperiod):
-        # آزاد شدن job های جدید و بررسی deadline
         for t in tasks:
             if time % t.period == 0:
                 if t.remaining > 0:
                     missed.append((t.name, time))
                 t.remaining = t.execution_time
 
-        # انتخاب آماده‌ترین وظیفه با بالاترین اولویت
         running = next((t for t in tasks if t.remaining > 0), None)
 
         if running:
@@ -61,7 +58,6 @@ def rate_monotonic(tasks):
         else:
             timeline.append("Idle")
 
-    # بررسی job هایی که تا انتهای hyperperiod تموم نشدن
     for t in tasks:
         if t.remaining > 0:
             missed.append((t.name, hyperperiod))
